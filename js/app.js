@@ -365,80 +365,107 @@ function selectVIP(level) {
     // Actualizar información del pago
     document.getElementById('paymentVIPName').textContent = vipNames[levelStr] + ' - ' + VIP_PRICES[level] + ' Bs';
     
+    // Limpiar el QR antes de mostrar la sección
+    document.getElementById('qrCode').innerHTML = '';
+    
     // Ocultar sección VIP y mostrar sección de pago
     document.getElementById('vipSection').classList.add('hidden');
     document.getElementById('paymentSection').classList.remove('hidden');
     
-    // Generar QR después de que la sección sea visible
-    setTimeout(() => {
-        generateQRCode(level);
-    }, 200);
+    // Generar QR inmediatamente
+    generateQRCode(level);
     
     showNotification('Seleccionaste ' + vipNames[levelStr] + '. Escanea el código QR para pagar.', 'info');
 }
 
 function generateQRCode(level) {
     const qrContainer = document.getElementById('qrCode');
+    
+    if (!qrContainer) {
+        console.error('Contenedor QR no encontrado');
+        return;
+    }
+    
+    // Limpiar el contenedor
     qrContainer.innerHTML = '';
     
     try {
-        // Generar el código QR base
-        const qrCode = new QRCode(qrContainer, {
+        // Mostrar mensaje de carga breve
+        qrContainer.innerHTML = '<p style="text-align: center; color: #999;">Generando código QR...</p>';
+        
+        // Generar el código QR
+        new QRCode(qrContainer, {
             text: 'VIP_PLAY_BOLIVIA_' + level + '_' + currentUser.id + '_' + Date.now(),
             width: 250,
             height: 250,
             colorDark: '#000000',
             colorLight: '#ffffff',
-            correctLevel: QRCode.CorrectLevel.H
+            correctLevel: QRCode.CorrectLevel.H,
+            render: 'canvas'
         });
         
-        // Esperar a que se genere y agregar el símbolo de dinero
+        // Esperar a que se dibuje el canvas y agregar el símbolo
         setTimeout(() => {
-            const qrCanvas = qrContainer.querySelector('canvas');
-            
-            if (qrCanvas) {
-                // Crear un nuevo canvas para dibujar encima del QR
-                const finalCanvas = document.createElement('canvas');
-                const ctx = finalCanvas.getContext('2d');
-                
-                finalCanvas.width = qrCanvas.width;
-                finalCanvas.height = qrCanvas.height;
-                
-                // Dibujar el QR original
-                ctx.drawImage(qrCanvas, 0, 0);
-                
-                // Dibujar círculo blanco en el centro
-                const centerX = finalCanvas.width / 2;
-                const centerY = finalCanvas.height / 2;
-                const radius = 40;
-                
-                ctx.fillStyle = '#ffffff';
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-                ctx.fill();
-                
-                // Dibujar borde del círculo
-                ctx.strokeStyle = '#cccccc';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-                
-                // Dibujar símbolo de dinero ($) en el centro
-                ctx.fillStyle = '#ff9900';
-                ctx.font = 'bold 60px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText('$', centerX, centerY);
-                
-                // Reemplazar el canvas original con el nuevo
-                qrContainer.innerHTML = '';
-                qrContainer.appendChild(finalCanvas);
-                
-                console.log('QR generado correctamente con símbolo $ para nivel VIP:', level);
-            }
-        }, 300);
+            decorateQRCode(qrContainer, level);
+        }, 200);
+        
     } catch (e) {
         console.error('Error generando QR:', e);
-        qrContainer.innerHTML = '<p style="color: red; text-align: center;">Error generando QR. Intenta de nuevo.</p>';
+        qrContainer.innerHTML = '<p style="color: red; text-align: center;">❌ Error al generar QR. Recarga la página.</p>';
+    }
+}
+
+function decorateQRCode(qrContainer, level) {
+    try {
+        // Buscar el canvas generado por QRCode
+        const qrCanvas = qrContainer.querySelector('canvas');
+        
+        if (!qrCanvas) {
+            console.log('Canvas no encontrado aún');
+            return;
+        }
+        
+        // Crear un nuevo canvas con las decoraciones
+        const decoratedCanvas = document.createElement('canvas');
+        decoratedCanvas.width = qrCanvas.width;
+        decoratedCanvas.height = qrCanvas.height;
+        
+        const ctx = decoratedCanvas.getContext('2d');
+        
+        // Dibujar el QR original
+        ctx.drawImage(qrCanvas, 0, 0);
+        
+        // Dibujar círculo blanco en el centro
+        const centerX = decoratedCanvas.width / 2;
+        const centerY = decoratedCanvas.height / 2;
+        const radius = 40;
+        
+        // Círculo blanco
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Borde gris
+        ctx.strokeStyle = '#cccccc';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // Símbolo de dinero
+        ctx.fillStyle = '#ff9900';
+        ctx.font = 'bold 60px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('$', centerX, centerY);
+        
+        // Reemplazar con el canvas decorado
+        qrContainer.innerHTML = '';
+        qrContainer.appendChild(decoratedCanvas);
+        
+        console.log('✓ QR decorado exitosamente para nivel:', level);
+        
+    } catch (e) {
+        console.error('Error decorando QR:', e);
     }
 }
 
@@ -725,7 +752,7 @@ function submitRewardClaim(event) {
     event.preventDefault();
 
     const claim = {
-        id: 'claim_' + Date.time(),
+        id: 'claim_' + Date.now(),
         userId: currentUser.id,
         playerName: document.getElementById('claimPlayerName').value,
         playerId: document.getElementById('claimPlayerID').value,
