@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIP PLAY BOLIVIA - Plataforma de Juegos y Recompensas</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Pantalla de Carga -->
+        <div id="loadingScreen" class="loading-screen">
+            <div class="spinner"></div>
+            <p>Cargando VIP PLAY BOLIVIA...</p>
+        </div>
+
+        <!-- Pantalla de Autenticación -->
+        <div id="authScreen" class="screen">
+            <div class="auth-container">
+                <header class="auth-header">
+                    <h1>🎮 VIP PLAY BOLIVIA</h1>
+                    <p>Juega • Completa Misiones • Gana Recompensas</p>
+                </header>
+
+                <!-- Formulario de Registro -->
+                <div id="registerForm" class="auth-form">
+                    <h2>Crear Cuenta</h2>
+                    <input type="text" id="regUsername" placeholder="Nombre de usuario" required>
+                    <input type="email" id="regEmail" placeholder="Correo electrónico" required>
+                    <input type="password" id="regPassword" placeholder="Contraseña" required>
+                    <input type="password" id="regConfirmPassword" placeholder="Confirmar contraseña" required>
+                    <button class="btn-primary" onclick="register()">Registrarse</button>
+                    <p class="toggle-form">¿Ya tienes cuenta? <a href="#" onclick="toggleAuthForm()">Inicia sesión</a></p>
+                </div>
+
+                <!-- Formulario de Inicio de Sesión -->
+                <div id="loginForm" class="auth-form hidden">
+                    <h2>Iniciar Sesión</h2>
+                    <input type="email" id="loginEmail" placeholder="Correo electrónico" required>
+                    <input type="password" id="loginPassword" placeholder="Contraseña" required>
+                    <button class="btn-primary" onclick="login()">Ingresar</button>
+                    <p class="toggle-form">¿No tienes cuenta? <a href="#" onclick="toggleAuthForm()">Regístrate aquí</a></p>
+                    <p class="toggle-form"><a href="#" onclick="showRecoverPassword()">¿Olvidaste tu contraseña?</a></p>
+                </div>
+
+                <!-- Recuperar Contraseña -->
+                <div id="recoverPasswordForm" class="auth-form hidden">
+                    <h2>Recuperar Contraseña</h2>
+                    <p>Ingresa tu correo electrónico para recibir instrucciones</p>
+                    <input type="email" id="recoverEmail" placeholder="Correo electrónico" required>
+                    <button class="btn-primary" onclick="recoverPassword()">Enviar</button>
+                    <p class="toggle-form"><a href="#" onclick="showLoginForm()">Volver al inicio de sesión</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pantalla Principal -->
+        <div id="mainScreen" class="screen hidden">
+            <!-- Navbar -->
+            <nav class="navbar">
+                <div class="nav-left">
+                    <h1 class="logo">🎮 VIP PLAY BOLIVIA</h1>
+                </div>
+                <div class="nav-center">
+                    <a href="#" onclick="showSection('home')" class="nav-link active">Inicio</a>
+                    <a href="#" onclick="showSection('vip')" class="nav-link">VIP</a>
+                    <a href="#" onclick="showSection('games')" class="nav-link">Minijuegos</a>
+                    <a href="#" onclick="showSection('missions')" class="nav-link">Misiones</a>
+                    <a href="#" onclick="showSection('ranking')" class="nav-link">Ranking</a>
+                    <a href="#" onclick="showSection('profile')" class="nav-link">Perfil</a>
+                </div>
+                <div class="nav-right">
+                    <div class="user-info">
+                        <span id="userDiamonds">💎 0</span>
+                        <span id="userLevel">👑 Básico</span>
+                    </div>
+                    <button class="btn-logout" onclick="logout()">Salir</button>
+                </div>
+            </nav>
+
+            <!-- Contenedor Principal -->
+            <div class="main-container">
+                <!-- Sección Home -->
+                <section id="homeSection" class="section active">
+                    <div class="hero">
+                        <h1>👑 Bienvenido, <span id="welcomeUsername"></span></h1>
+                        <p>Completa misiones, juega y gana recompensas increíbles</p>
+                        <button class="btn-primary" onclick="showSection('vip')">Obtén VIP Ahora</button>
+                    </div>
+
+                    <div class="quick-stats">
+                        <div class="stat-card">
+                            <h3>💎 Diamantes</h3>
+                            <p id="statDiamonds">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>🏆 Puntos</h3>
+                            <p id="statPoints">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>🎫 Boletos</h3>
+                            <p id="statTickets">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>⭐ Logros</h3>
+                            <p id="statAchievements">0</p>
+                        </div>
+                    </div>
+
+                    <div class="section-title">🎁 Cofre Diario</div>
+                    <div class="daily-chest">
+                        <button class="btn-primary" onclick="openDailyChest()" id="dailyChestBtn">Abre tu Cofre</button>
+                        <p id="chestStatus">Vuelve mañana para tu siguiente cofre</p>
+                    </div>
+
+                    <div class="section-title">🎉 Próximos Sorteos</div>
+                    <div class="raffles-preview">
+                        <div class="raffle-card">
+                            <h3>Sorteo Semanal</h3>
+                            <p>💎 500 Diamantes</p>
+                            <p>⏳ <span id="weeklyRaffleTime">7 días</span></p>
+                        </div>
+                        <div class="raffle-card">
+                            <h3>Sorteo Mensual</h3>
+                            <p>💎 2000 Diamantes + VIP Elite Gratis</p>
+                            <p>⏳ <span id="monthlyRaffleTime">30 días</span></p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sección VIP -->
+                <section id="vipSection" class="section hidden">
+                    <div class="section-header">
+                        <h2>👑 Membresías VIP</h2>
+                        <p>Elige tu nivel y comienza a disfrutar de beneficios exclusivos</p>
+                    </div>
+
+                    <div class="vip-cards-container">
+                        <!-- VIP 1 -->
+                        <div class="vip-card" data-vip="1">
+                            <div class="vip-header">
+                                <h3>VIP 1</h3>
+                                <span class="vip-badge">PRINCIPIANTE</span>
+                            </div>
+                            <div class="vip-price">
+                                <span class="currency">10 Bs</span>
+                            </div>
+                            <div class="vip-benefits">
+                                <div class="benefit">💎 110 Diamantes</div>
+                                <div class="benefit">🎫 1 Boleto para sorteos</div>
+                                <div class="benefit">🏆 Acceso a misiones básicas</div>
+                                <div class="benefit">📊 Panel de estadísticas</div>
+                            </div>
+                            <button class="btn-vip" onclick="selectVIP(1)">Comprar VIP 1</button>
+                        </div>
+
+                        <!-- VIP 2 -->
+                        <div class="vip-card" data-vip="2">
+                            <div class="vip-header">
+                                <h3>VIP 2</h3>
+                                <span class="vip-badge">AVANZADO</span>
+                            </div>
+                            <div class="vip-price">
+                                <span class="currency">20 Bs</span>
+                            </div>
+                            <div class="vip-benefits">
+                                <div class="benefit">💎 220 Diamantes</div>
+                                <div class="benefit">🎫 3 Boletos para sorteos</div>
+                                <div class="benefit">🏆 Acceso a minijuegos especiales</div>
+                                <div class="benefit">🎁 Recompensas semanales</div>
+                            </div>
+                            <button class="btn-vip" onclick="selectVIP(2)">Comprar VIP 2</button>
+                        </div>
+
+                        <!-- VIP 3 -->
+                        <div class="vip-card" data-vip="3">
+                            <div class="vip-header">
+                                <h3>VIP 3</h3>
+                                <span class="vip-badge">PROFESIONAL</span>
+                            </div>
+                            <div class="vip-price">
+                                <span class="currency">50 Bs</span>
+                            </div>
+                            <div class="vip-benefits">
+                                <div class="benefit">💎 570 Diamantes</div>
+                                <div class="benefit">🎫 7 Boletos para sorteos</div>
+                                <div class="benefit">🏆 Acceso a torneos semanales</div>
+                                <div class="benefit">🎁 Cofre especial semanal</div>
+                            </div>
+                            <button class="btn-vip" onclick="selectVIP(3)">Comprar VIP 3</button>
+                        </div>
+
+                        <!-- VIP ELITE -->
+                        <div class="vip-card elite" data-vip="elite">
+                            <div class="vip-header">
+                                <h3>VIP ELITE</h3>
+                                <span class="vip-badge">👑 ELITE 👑</span>
+                            </div>
+                            <div class="vip-price">
+                                <span class="currency">100 Bs</span>
+                            </div>
+                            <div class="vip-benefits">
+                                <div class="benefit">💎 1166 Diamantes</div>
+                                <div class="benefit">🎫 15 Boletos para sorteos</div>
+                                <div class="benefit">🏆 Acceso a torneos exclusivos</div>
+                                <div class="benefit">🎁 Cofre diario especial</div>
+                                <div class="benefit">⭐ Soporte prioritario</div>
+                            </div>
+                            <button class="btn-vip elite-btn" onclick="selectVIP('elite')">Comprar VIP ELITE</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sección Pago -->
+                <section id="paymentSection" class="section hidden">
+                    <div class="payment-container">
+                        <div class="payment-header">
+                            <h2>💳 Realizar Pago</h2>
+                            <p id="paymentVIPName"></p>
+                        </div>
+
+                        <div class="payment-content">
+                            <div class="qr-section">
+                                <h3>Escanea el código QR</h3>
+                                <div id="qrCode" class="qr-code"></div>
+                                <p>O realiza una transferencia a:</p>
+                                <p class="bank-info"><strong>NIT: 1234567890</strong></p>
+                                <p class="bank-info"><strong>Banco: Banco Boliviano de Crédito (BBC)</strong></p>
+                            </div>
+
+                            <div class="upload-section">
+                                <h3>Sube tu comprobante de pago</h3>
+                                <div class="file-upload">
+                                    <input type="file" id="receiptUpload" accept="image/*" onchange="previewReceipt()">
+                                    <div id="receiptPreview" class="receipt-preview hidden"></div>
+                                </div>
+                                <button class="btn-primary" onclick="submitPayment()">Enviar Comprobante</button>
+                                <button class="btn-secondary" onclick="backToVIP()">Cancelar</button>
+                            </div>
+                        </div>
+
+                        <div id="paymentStatus" class="payment-status hidden">
+                            <p id="paymentStatusText"></p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sección Minijuegos -->
+                <section id="gamesSection" class="section hidden">
+                    <div class="section-header">
+                        <h2>🎮 Minijuegos</h2>
+                        <p>Juega y gana puntos para completar misiones</p>
+                    </div>
+
+                    <div class="games-grid">
+                        <!-- Carrera de Autos -->
+                        <div class="game-card" onclick="startGame('race')">
+                            <div class="game-icon">🚗</div>
+                            <h3>Carrera de Autos</h3>
+                            <p>Gana carreras y obtén puntos</p>
+                            <div class="game-reward">+50 puntos</div>
+                        </div>
+
+                        <!-- Penales -->
+                        <div class="game-card" onclick="startGame('penalties')">
+                            <div class="game-icon">⚽</div>
+                            <h3>Penales de Fútbol</h3>
+                            <p>Marca goles y sube tu puntuación</p>
+                            <div class="game-reward">+40 puntos</div>
+                        </div>
+
+                        <!-- Memoria -->
+                        <div class="game-card" onclick="startGame('memory')">
+                            <div class="game-icon">🧠</div>
+                            <h3>Juego de Memoria</h3>
+                            <p>Encuentra los pares correctos</p>
+                            <div class="game-reward">+30 puntos</div>
+                        </div>
+
+                        <!-- Runner -->
+                        <div class="game-card" onclick="startGame('runner')">
+                            <div class="game-icon">🏃</div>
+                            <h3>Runner Infinito</h3>
+                            <p>Corre y evita obstáculos</p>
+                            <div class="game-reward">+45 puntos</div>
+                        </div>
+
+                        <!-- Tiro al Blanco -->
+                        <div class="game-card" onclick="startGame('shooting')">
+                            <div class="game-icon">🎯</div>
+                            <h3>Tiro al Blanco</h3>
+                            <p>Acertá los disparos al blanco</p>
+                            <div class="game-reward">+35 puntos</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sección Misiones -->
+                <section id="missionsSection" class="section hidden">
+                    <div class="section-header">
+                        <h2>🎯 Misiones y Progreso</h2>
+                        <p>Completa misiones para ganar puntos y recompensas</p>
+                    </div>
+
+                    <div class="progress-overview">
+                        <h3>Progreso del Nivel VIP</h3>
+                        <div class="progress-bar-large">
+                            <div id="vipProgressBar" class="progress-fill" style="width: 0%"></div>
+                        </div>
+                        <p><span id="vipProgressText">0%</span> Completado</p>
+                    </div>
+
+                    <div class="missions-container">
+                        <div class="missions-list" id="missionsList"></div>
+                    </div>
+                </section>
+
+                <!-- Sección Ranking -->
+                <section id="rankingSection" class="section hidden">
+                    <div class="section-header">
+                        <h2>🏆 Ranking Semanal</h2>
+                        <p>Los mejores jugadores de la semana</p>
+                    </div>
+
+                    <div class="ranking-container">
+                        <table class="ranking-table">
+                            <thead>
+                                <tr>
+                                    <th>Posición</th>
+                                    <th>Jugador</th>
+                                    <th>Puntos</th>
+                                    <th>Nivel VIP</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rankingBody">
+                                <!-- Rellenado con JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="section-title">Mis Estadísticas</div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <h4>Total de Puntos</h4>
+                            <p id="myTotalPoints">0</p>
+                        </div>
+                        <div class="stat-item">
+                            <h4>Partidas Jugadas</h4>
+                            <p id="myGamesPlayed">0</p>
+                        </div>
+                        <div class="stat-item">
+                            <h4>Tasa de Victoria</h4>
+                            <p id="myWinRate">0%</p>
+                        </div>
+                        <div class="stat-item">
+                            <h4>Logros Desbloqueados</h4>
+                            <p id="myAchievements">0</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sección Perfil -->
+                <section id="profileSection" class="section hidden">
+                    <div class="section-header">
+                        <h2>👤 Mi Perfil</h2>
+                    </div>
+
+                    <div class="profile-container">
+                        <div class="profile-header">
+                            <div class="profile-avatar">👤</div>
+                            <div class="profile-info">
+                                <h3 id="profileUsername"></h3>
+                                <p id="profileEmail"></p>
+                                <div class="profile-stats">
+                                    <span>Nivel: <strong id="profileLevel"></strong></span>
+                                    <span>Diamantes: <strong id="profileDiamonds"></strong></span>
+                                    <span>Puntos: <strong id="profilePoints"></strong></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="profile-tabs">
+                            <button class="tab-btn active" onclick="showProfileTab('achievements')">Logros</button>
+                            <button class="tab-btn" onclick="showProfileTab('referrals')">Referidos</button>
+                            <button class="tab-btn" onclick="showProfileTab('rewards')">Reclamos</button>
+                        </div>
+
+                        <div id="achievementsTab" class="tab-content active">
+                            <div id="achievementsList" class="achievements-grid"></div>
+                        </div>
+
+                        <div id="referralsTab" class="tab-content hidden">
+                            <div class="referral-section">
+                                <h3>Tu código de referido:</h3>
+                                <div class="referral-code">
+                                    <input type="text" id="referralCode" readonly>
+                                    <button class="btn-secondary" onclick="copyReferralCode()">Copiar</button>
+                                </div>
+                                <p>Invita amigos y gana recompensas</p>
+                                <div id="referralsList" class="referrals-list"></div>
+                            </div>
+                        </div>
+
+                        <div id="rewardsTab" class="tab-content hidden">
+                            <div class="rewards-section">
+                                <h3>Solicitar Recompensa</h3>
+                                <form onsubmit="submitRewardClaim(event)">
+                                    <input type="text" id="claimPlayerName" placeholder="Nombre del jugador" required>
+                                    <input type="text" id="claimPlayerID" placeholder="ID del jugador" required>
+                                    <select id="claimGame" required>
+                                        <option value="">Selecciona un juego</option>
+                                        <option value="race">Carrera de Autos</option>
+                                        <option value="penalties">Penales de Fútbol</option>
+                                        <option value="memory">Juego de Memoria</option>
+                                        <option value="runner">Runner Infinito</option>
+                                        <option value="shooting">Tiro al Blanco</option>
+                                    </select>
+                                    <select id="claimVIPLevel" required>
+                                        <option value="">Selecciona tu nivel VIP</option>
+                                        <option value="1">VIP 1</option>
+                                        <option value="2">VIP 2</option>
+                                        <option value="3">VIP 3</option>
+                                        <option value="elite">VIP ELITE</option>
+                                    </select>
+                                    <textarea id="claimNotes" placeholder="Notas adicionales (opcional)"></textarea>
+                                    <button class="btn-primary" type="submit">Enviar Solicitud</button>
+                                </form>
+                                <div id="claimsList" class="claims-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sección Sorteos -->
+                <section id="rafflesSection" class="section hidden">
+                    <div class="section-header">
+                        <h2>🎉 Sorteos</h2>
+                        <p>Participa y gana increíbles recompensas</p>
+                    </div>
+
+                    <div class="raffles-container">
+                        <!-- Sorteo Semanal -->
+                        <div class="raffle-detail-card">
+                            <div class="raffle-header">
+                                <h3>🎊 Sorteo Semanal</h3>
+                                <span class="raffle-timer">⏳ <span id="weeklyTimer">7 días</span></span>
+                            </div>
+                            <div class="raffle-info">
+                                <p><strong>Premio Principal:</strong> 💎 500 Diamantes</p>
+                                <p><strong>Participantes:</strong> <span id="weeklyParticipants">0</span></p>
+                                <p><strong>Tus Boletos:</strong> <span id="weeklyTickets">0</span></p>
+                            </div>
+                            <button class="btn-primary" onclick="viewRaffleDetails('weekly')">Ver Detalles</button>
+                        </div>
+
+                        <!-- Sorteo Mensual -->
+                        <div class="raffle-detail-card">
+                            <div class="raffle-header">
+                                <h3>🎁 Sorteo Mensual</h3>
+                                <span class="raffle-timer">⏳ <span id="monthlyTimer">30 días</span></span>
+                            </div>
+                            <div class="raffle-info">
+                                <p><strong>Premio Principal:</strong> 💎 2000 Diamantes + VIP Elite Gratis</p>
+                                <p><strong>Participantes:</strong> <span id="monthlyParticipants">0</span></p>
+                                <p><strong>Tus Boletos:</strong> <span id="monthlyTickets">0</span></p>
+                            </div>
+                            <button class="btn-primary" onclick="viewRaffleDetails('monthly')">Ver Detalles</button>
+                        </div>
+
+                        <!-- Historial de Ganadores -->
+                        <div class="winners-section">
+                            <h3>🏆 Historial de Ganadores</h3>
+                            <div id="winnersList" class="winners-list"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sección Admin -->
+                <section id="adminSection" class="section hidden">
+                    <div class="section-header">
+                        <h2>📊 Panel de Administración</h2>
+                    </div>
+
+                    <div class="admin-tabs">
+                        <button class="admin-tab-btn active" onclick="showAdminTab('users')">Usuarios</button>
+                        <button class="admin-tab-btn" onclick="showAdminTab('payments')">Pagos</button>
+                        <button class="admin-tab-btn" onclick="showAdminTab('claims')">Reclamos</button>
+                        <button class="admin-tab-btn" onclick="showAdminTab('raffles')">Sorteos</button>
+                        <button class="admin-tab-btn" onclick="showAdminTab('stats')">Estadísticas</button>
+                    </div>
+
+                    <div id="usersTab" class="admin-tab-content active">
+                        <h3>Usuarios Registrados</h3>
+                        <div id="usersTable" class="admin-table"></div>
+                    </div>
+
+                    <div id="paymentsTab" class="admin-tab-content hidden">
+                        <h3>Gestionar Pagos</h3>
+                        <div id="paymentsTable" class="admin-table"></div>
+                    </div>
+
+                    <div id="claimsTab" class="admin-tab-content hidden">
+                        <h3>Gestionar Reclamos</h3>
+                        <div id="claimsTable" class="admin-table"></div>
+                    </div>
+
+                    <div id="rafflesTab" class="admin-tab-content hidden">
+                        <h3>Gestionar Sorteos</h3>
+                        <div id="rafflesManagement" class="admin-table"></div>
+                    </div>
+
+                    <div id="statsTab" class="admin-tab-content hidden">
+                        <h3>Estadísticas Generales</h3>
+                        <div id="statsOverview" class="stats-overview"></div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Modal para Juegos -->
+        <div id="gameModal" class="modal hidden">
+            <div class="modal-content game-modal">
+                <button class="close-btn" onclick="closeGameModal()">✕</button>
+                <div id="gameContainer"></div>
+            </div>
+        </div>
+
+        <!-- Notificaciones -->
+        <div id="notificationContainer" class="notification-container"></div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script src="js/games.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/qrcode.min.js"></script>
+</body>
+</html>
