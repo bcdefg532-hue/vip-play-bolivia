@@ -263,6 +263,7 @@ function showSection(sectionName) {
     // Ocultar todas las secciones
     document.querySelectorAll('.section').forEach(section => {
         section.classList.remove('active');
+        section.classList.add('hidden');
     });
 
     // Remover clase active de todos los nav-links
@@ -273,11 +274,14 @@ function showSection(sectionName) {
     // Mostrar sección seleccionada
     const section = document.getElementById(sectionName + 'Section');
     if (section) {
+        section.classList.remove('hidden');
         section.classList.add('active');
     }
 
     // Marcar nav-link como active
-    event.target.classList.add('active');
+    if (event && event.target) {
+        event.target.classList.add('active');
+    }
 
     // Ejecutar funciones específicas
     switch(sectionName) {
@@ -355,31 +359,87 @@ function selectVIP(level) {
     const levelStr = level.toString();
     const vipNames = { '1': 'VIP 1', '2': 'VIP 2', '3': 'VIP 3', 'elite': 'VIP ELITE' };
     
+    // Guardar nivel seleccionado
+    sessionStorage.setItem('selectedVIP', level);
+    
+    // Actualizar información del pago
     document.getElementById('paymentVIPName').textContent = vipNames[levelStr] + ' - ' + VIP_PRICES[level] + ' Bs';
     
-    showSection('payment');
+    // Ocultar sección VIP y mostrar sección de pago
     document.getElementById('vipSection').classList.add('hidden');
     document.getElementById('paymentSection').classList.remove('hidden');
     
-    // Generar QR (simulado)
-    generateQRCode(level);
+    // Generar QR después de que la sección sea visible
+    setTimeout(() => {
+        generateQRCode(level);
+    }, 200);
     
-    // Guardar nivel seleccionado
-    sessionStorage.setItem('selectedVIP', level);
+    showNotification('Seleccionaste ' + vipNames[levelStr] + '. Escanea el código QR para pagar.', 'info');
 }
 
 function generateQRCode(level) {
     const qrContainer = document.getElementById('qrCode');
     qrContainer.innerHTML = '';
     
-    const qrCode = new QRCode(qrContainer, {
-        text: 'VIP_PLAY_BOLIVIA_' + level + '_' + currentUser.id + '_' + Date.now(),
-        width: 200,
-        height: 200,
-        colorDark: '#ff9900',
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.H
-    });
+    try {
+        // Generar el código QR base
+        const qrCode = new QRCode(qrContainer, {
+            text: 'VIP_PLAY_BOLIVIA_' + level + '_' + currentUser.id + '_' + Date.now(),
+            width: 250,
+            height: 250,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+        });
+        
+        // Esperar a que se genere y agregar el símbolo de dinero
+        setTimeout(() => {
+            const qrCanvas = qrContainer.querySelector('canvas');
+            
+            if (qrCanvas) {
+                // Crear un nuevo canvas para dibujar encima del QR
+                const finalCanvas = document.createElement('canvas');
+                const ctx = finalCanvas.getContext('2d');
+                
+                finalCanvas.width = qrCanvas.width;
+                finalCanvas.height = qrCanvas.height;
+                
+                // Dibujar el QR original
+                ctx.drawImage(qrCanvas, 0, 0);
+                
+                // Dibujar círculo blanco en el centro
+                const centerX = finalCanvas.width / 2;
+                const centerY = finalCanvas.height / 2;
+                const radius = 40;
+                
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                // Dibujar borde del círculo
+                ctx.strokeStyle = '#cccccc';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Dibujar símbolo de dinero ($) en el centro
+                ctx.fillStyle = '#ff9900';
+                ctx.font = 'bold 60px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('$', centerX, centerY);
+                
+                // Reemplazar el canvas original con el nuevo
+                qrContainer.innerHTML = '';
+                qrContainer.appendChild(finalCanvas);
+                
+                console.log('QR generado correctamente con símbolo $ para nivel VIP:', level);
+            }
+        }, 300);
+    } catch (e) {
+        console.error('Error generando QR:', e);
+        qrContainer.innerHTML = '<p style="color: red; text-align: center;">Error generando QR. Intenta de nuevo.</p>';
+    }
 }
 
 function previewReceipt() {
@@ -436,9 +496,9 @@ function submitPayment() {
 }
 
 function backToVIP() {
+    resetPaymentForm();
     document.getElementById('paymentSection').classList.add('hidden');
     document.getElementById('vipSection').classList.remove('hidden');
-    showSection('vip');
 }
 
 function resetPaymentForm() {
@@ -596,7 +656,9 @@ function showProfileTab(tabName) {
     });
 
     document.getElementById(tabName + 'Tab').classList.remove('hidden');
-    event.target.classList.add('active');
+    if (event && event.target) {
+        event.target.classList.add('active');
+    }
 }
 
 function loadAchievements() {
@@ -663,7 +725,7 @@ function submitRewardClaim(event) {
     event.preventDefault();
 
     const claim = {
-        id: 'claim_' + Date.now(),
+        id: 'claim_' + Date.time(),
         userId: currentUser.id,
         playerName: document.getElementById('claimPlayerName').value,
         playerId: document.getElementById('claimPlayerID').value,
